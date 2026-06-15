@@ -1,0 +1,169 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=${API_NODE_ENV}
+      - PORT=3000
+      - DATABASE_URL=${API_DATABASE_URL}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+      - JWT_SECRET=${JWT_SECRET:-jwt-secret}
+      - LOGS_SERVICE_HOST=${LOGS_SERVICE_HOST}
+      - LOGS_SERVICE_PORT=${LOGS_SERVICE_PORT}
+      - FILES_SERVICE_HOST=${FILES_SERVICE_HOST}
+      - FILES_SERVICE_PORT=${FILES_SERVICE_PORT}
+    ports:
+      - ${API_PORT}:3000
+    volumes:
+      - ./api:/app
+      - api-node-modules:/app/node_modules
+    networks:
+      - myquizz-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+    ports:
+      - ${CLIENT_PORT}:5173
+    volumes:
+      - ./client:/app
+      - client-node-modules:/app/node_modules
+    networks:
+      - myquizz-network
+
+  logs-service:
+    build:
+      context: ./logs-service
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=${LOGS_NODE_ENV}
+      - PORT=3000
+      - DATABASE_URL=${LOGS_DATABASE_URL}
+    ports:
+      - ${LOGS_PORT}:3000
+    volumes:
+      - ./logs-service:/app
+      - logs-node-modules:/app/node_modules
+    networks:
+      - myquizz-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  files-service:
+    build:
+      context: ./files-service
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=${FILES_NODE_ENV}
+      - PORT=3000
+      - DATABASE_URL=${FILES_DATABASE_URL}
+    ports:
+      - ${FILES_PORT}:3000
+    volumes:
+      - ./files-service:/app
+      - files-node-modules:/app/node_modules
+    networks:
+      - myquizz-network
+    depends_on:
+      files-postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=myquizz
+      - POSTGRES_PASSWORD=myquizz
+      - POSTGRES_DB=myquizz_db
+    ports:
+      - ${PG_PORT}:5432
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+    networks:
+      - myquizz-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myquizz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Database for files-service
+  files-postgres:
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=fileservice
+      - POSTGRES_PASSWORD=fileservice
+      - POSTGRES_DB=fileservice
+    ports:
+      - ${FILES_PG_PORT}:5432
+    volumes:
+      - files-postgres-volume:/var/lib/postgresql/data
+    networks:
+      - myquizz-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myquizz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    ports:
+      - ${ADMINER_PORT}:8080
+    networks:
+      - myquizz-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  mongodb:
+    image: mongo:7
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+    ports:
+      - ${MONGO_PORT}:27017
+    volumes:
+      - mongodb-volume:/data/db
+    networks:
+      - myquizz-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-express:
+    image: mongo-express:latest
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_PORT=${MONGO_PORT}
+    ports:
+      - ${MONGO_EXPRESS_PORT}:8081
+    networks:
+      - myquizz-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+networks:
+  myquizz-network:
+
+volumes:
+  postgres-volume:
+  mongodb-volume:
+  api-node-modules:
+  client-node-modules:
+  logs-node-modules:
+  files-node-modules:
+  files-postgres-volume:

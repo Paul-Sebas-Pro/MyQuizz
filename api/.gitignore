@@ -1,0 +1,12 @@
+# NPM
+node_modules
+
+# TSC
+dist
+
+# ENV
+.env
+
+# PRISMA
+generated
+

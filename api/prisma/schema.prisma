@@ -1,0 +1,58 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+// Enumeration pour éviter les erreurs de donnée
+enum Role {
+  member
+  author
+  admin
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  firstname String
+  lastname  String
+  email     String @unique()
+  password  String
+
+  // Role des utilisateurs
+  role Role @default(member)
+
+  refresh_tokens RefreshToken[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("user") // Correspondance entre le model User dans le code et la table "user" dans la BDD
+}
+
+model Level {
+  id Int @id @default(autoincrement())
+
+  name String @unique()
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model RefreshToken {
+  id Int @id @default(autoincrement())
+
+  token String
+
+  user User @relation(fields: [user_id], references: [id]) // Alias
+  user_id Int // Foreign Key
+
+  issued_at DateTime @default(now())
+  expires_at DateTime
+
+  @@map("refresh_token")
+}
