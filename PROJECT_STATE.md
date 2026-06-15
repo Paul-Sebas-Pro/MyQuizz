@@ -1,0 +1,151 @@
+# MyQuizz — État du projet
+
+> Dernière mise à jour : 2026-06-16 — Phase 1 Design complétée
+
+## Vision
+
+Application de quiz full-stack orientée portfolio. Objectif : codebase propre, moderne, testée, visuellement soignée — niveau production.
+
+---
+
+## Stack technique
+
+| Couche                     | Technologie                          | Version |
+| -------------------------- | ------------------------------------ | ------- |
+| Frontend                   | Svelte 5 (Runes) + Vite + TypeScript | ^5.28   |
+| API                        | Node.js + Express 5 + TypeScript     | ^5.1    |
+| ORM                        | Prisma                               | ^6.11   |
+| Base de données principale | PostgreSQL                           | 17      |
+| Auth                       | JWT (access + refresh token)         | ^9.0    |
+| Hachage                    | argon2                               | ^0.44   |
+| Validation                 | Zod                                  | ^4.3    |
+| HTTP client                | Axios                                | ^1.13   |
+| Conteneurs                 | Docker Compose (dev + prod)          | -       |
+| Logs service               | MongoDB                              | 7       |
+| Files service              | PostgreSQL séparé                    | 17      |
+| Tests API                  | Node test runner (tsx)               | -       |
+| Lint                       | ESLint + typescript-eslint           | ^9.39   |
+
+---
+
+## Architecture microservices
+
+```
+MyQuizz/
+├── api/            → API principale (Express + Prisma + PostgreSQL)
+├── client/         → Frontend (Svelte 5 + Vite)
+├── logs-service/   → Service de logs (MongoDB)
+├── files-service/  → Service de fichiers (PostgreSQL)
+├── docs/           → Conception (UML, Merise, user stories, endpoints)
+├── docker-compose.dev.yml
+└── docker-compose.yml
+```
+
+---
+
+## État d'implémentation
+
+### ✅ Backend — Implémenté
+
+| Domaine | Endpoint              | Statut |
+| ------- | --------------------- | ------ |
+| Auth    | POST `/auth/register` | ✅      |
+| Auth    | POST `/auth/login`    | ✅      |
+| Auth    | POST `/auth/refresh`  | ✅      |
+| Auth    | GET `/auth/me`        | ✅      |
+| Auth    | POST `/auth/logout`   | ✅      |
+| Users   | GET `/users`          | ✅      |
+| Levels  | GET `/levels`         | ✅      |
+| Levels  | GET `/levels/:id`     | ✅      |
+| Levels  | POST `/levels`        | ✅      |
+| Levels  | PATCH `/levels/:id`   | ✅      |
+| Levels  | DELETE `/levels/:id`  | ✅      |
+| Info    | GET `/api/info`       | ✅      |
+
+### ❌ Backend — À implémenter
+
+| Domaine   | Endpoints                              |
+| --------- | -------------------------------------- |
+| Quiz      | CRUD complet + tags                    |
+| Questions | CRUD                                   |
+| Answers   | CRUD                                   |
+| Tags      | CRUD                                   |
+| Attempts  | POST + GET (scores, historique)        |
+| Users     | GET `/users/:id/profile` + `/attempts` |
+
+### Schéma Prisma — État actuel
+
+| Modèle         | Statut | Notes                     |
+| -------------- | ------ | ------------------------- |
+| `User`         | ✅      | Complet avec enum Role    |
+| `Level`        | ✅      | Complet                   |
+| `RefreshToken` | ✅      | Complet                   |
+| `Quiz`         | ❌      | À créer                   |
+| `Question`     | ❌      | À créer                   |
+| `Answer`       | ❌      | À créer                   |
+| `Tag`          | ❌      | À créer (avec parent_id)  |
+| `QuizHasTag`   | ❌      | Table de jointure à créer |
+| `Attempt`      | ❌      | À créer                   |
+
+### ✅ Frontend — Implémenté
+
+- Auth store (Svelte writable) : `user`, `isAuthenticated`, `isLoading`
+- Login component + form
+- Signup component + form
+- Axios instance avec interceptors (auto-refresh token 401)
+- Guard `requireAuth()`
+
+### ❌ Frontend — À implémenter
+
+- Routeur (pas de SvelteKit — navigation via `window.location.href` pour l'instant)
+- Pages : Home, Dashboard, Quiz list, Quiz play, Quiz create/edit, Profile, Admin
+- Composants UI : NavBar, QuizCard, QuestionCard, ScoreBoard, etc.
+- Charte graphique + design system
+- Intégration logs-service et files-service côté client
+
+---
+
+## Conception disponible (docs/)
+
+| Document                 | Emplacement                                          |
+| ------------------------ | ---------------------------------------------------- |
+| User stories             | `docs/conception/analyse-besoin/user-stories.md`     |
+| Endpoints API            | `docs/conception/api/endpoints.md`                   |
+| Dictionnaire des données | `docs/conception/merise/dictionnaire-des-données.md` |
+| Recueil des données      | `docs/conception/merise/recueil-des-données.md`      |
+| Diagrammes UML (.puml)   | `docs/conception/uml/`                               |
+| MCD / MLD / MPD          | `docs/conception/merise/mcd/ mld/ mpd/`              |
+| Maquettes design (done)  | `docs/conception/design/maquettes.pen` — Pencil MCP  |
+
+---
+
+## Roadmap portfolio
+
+### Phase 1 — Design & charte graphique ✅
+
+- [x] Définir palette couleurs, typographie, espacements
+- [x] Maquettes desktop + mobile (Pencil MCP) — 8 écrans (Home, Login, Dashboard, Quiz Play × 2)
+- [x] Design system : variables Pencil (couleurs, rayons, typographies)
+
+### Phase 2 — Compléter le schéma BDD
+
+- [ ] Ajouter Quiz, Question, Answer, Tag, QuizHasTag, Attempt dans Prisma
+- [ ] Migrations + seed complet
+
+### Phase 3 — Compléter l'API
+
+- [ ] Tous les endpoints manquants (quiz, questions, answers, tags, attempts)
+- [ ] Tests spec pour chaque nouveau controller
+
+### Phase 4 — Refondre le frontend
+
+- [ ] Ajouter un routeur (SvelteKit ou svelte-spa-router)
+- [ ] Implémenter toutes les pages
+- [ ] Intégrer le design system
+
+### Phase 5 — Polish & déploiement
+
+- [ ] Mettre à jour toutes les dépendances vers les dernières versions
+- [ ] CI/CD (GitHub Actions)
+- [ ] README complet orienté portfolio
+- [ ] Déploiement (VPS ou cloud)
