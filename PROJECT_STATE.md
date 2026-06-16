@@ -80,12 +80,12 @@ MyQuizz/
 | `User`         | ✅      | Complet avec enum Role    |
 | `Level`        | ✅      | Complet                   |
 | `RefreshToken` | ✅      | Complet                   |
-| `Quiz`         | ❌      | À créer                   |
-| `Question`     | ❌      | À créer                   |
-| `Answer`       | ❌      | À créer                   |
-| `Tag`          | ❌      | À créer (avec parent_id)  |
-| `QuizHasTag`   | ❌      | Table de jointure à créer |
-| `Attempt`      | ❌      | À créer                   |
+| `Quiz`         | ✅      | Complet                   |
+| `Question`     | ✅      | Complet (link, anecdote)  |
+| `Answer`       | ✅      | Complet (is_valid)        |
+| `Tag`          | ✅      | Hiérarchie (parent_id)    |
+| `QuizTag`      | ✅      | Jointure (@@unique)       |
+| `Attempt`      | ✅      | score + score_max         |
 
 ### ✅ Frontend — Implémenté
 
@@ -127,10 +127,11 @@ MyQuizz/
 - [x] Maquettes desktop + mobile (Pencil MCP) — 8 écrans (Home, Login, Dashboard, Quiz Play × 2)
 - [x] Design system : variables Pencil (couleurs, rayons, typographies)
 
-### Phase 2 — Compléter le schéma BDD
+### Phase 2 — Compléter le schéma BDD ✅
 
-- [ ] Ajouter Quiz, Question, Answer, Tag, QuizHasTag, Attempt dans Prisma
-- [ ] Migrations + seed complet
+- [x] Ajouter Quiz, Question, Answer, Tag, QuizTag, Attempt dans Prisma
+- [x] Seed complet : 3 users (argon2), 3 quiz, 7 questions, 6 tags, 6 tentatives
+- [ ] Lancer migration Docker : `docker compose -f docker-compose.dev.yml exec api npm run db:migrate:dev`
 
 ### Phase 3 — Compléter l'API
 

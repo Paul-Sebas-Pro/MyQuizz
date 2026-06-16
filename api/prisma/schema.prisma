@@ -27,6 +27,8 @@ model User {
   role Role @default(member)
 
   refresh_tokens RefreshToken[]
+  quizzes        Quiz[]
+  attempts       Attempt[]
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
@@ -39,6 +41,8 @@ model Level {
 
   name String @unique()
 
+  questions Question[]
+
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 }
@@ -48,11 +52,114 @@ model RefreshToken {
 
   token String
 
-  user User @relation(fields: [user_id], references: [id]) // Alias
-  user_id Int // Foreign Key
+  user    User @relation(fields: [user_id], references: [id])
+  user_id Int
 
-  issued_at DateTime @default(now())
+  issued_at  DateTime @default(now())
   expires_at DateTime
 
   @@map("refresh_token")
+}
+
+model Quiz {
+  id Int @id @default(autoincrement())
+
+  title       String
+  description String?
+  published_at DateTime?
+
+  author    User @relation(fields: [author_id], references: [id])
+  author_id Int
+
+  questions Question[]
+  tags      QuizTag[]
+  attempts  Attempt[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("quiz")
+}
+
+model Question {
+  id Int @id @default(autoincrement())
+
+  statement String
+  anecdote  String?
+  link      String?
+
+  quiz    Quiz @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  quiz_id Int
+
+  level    Level @relation(fields: [level_id], references: [id])
+  level_id Int
+
+  answers Answer[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("question")
+}
+
+model Answer {
+  id Int @id @default(autoincrement())
+
+  description String
+  is_valid    Boolean @default(false)
+
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id Int
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("answer")
+}
+
+model Tag {
+  id Int @id @default(autoincrement())
+
+  name String @unique
+
+  parent    Tag?  @relation("TagHierarchy", fields: [parent_id], references: [id])
+  parent_id Int?
+  children  Tag[] @relation("TagHierarchy")
+
+  quizzes QuizTag[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("tag")
+}
+
+model QuizTag {
+  id Int @id @default(autoincrement())
+
+  quiz    Quiz @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  quiz_id Int
+
+  tag    Tag @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+  tag_id Int
+
+  @@unique([quiz_id, tag_id])
+  @@map("quiz_tag")
+}
+
+model Attempt {
+  id Int @id @default(autoincrement())
+
+  score     Int
+  score_max Int
+
+  user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id Int
+
+  quiz    Quiz @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  quiz_id Int
+
+  created_at DateTime @default(now())
+
+  @@map("attempt")
 }
