@@ -133,10 +133,15 @@ MyQuizz/
 - [x] Seed complet : 3 users (argon2), 3 quiz, 7 questions, 6 tags, 6 tentatives
 - [ ] Lancer migration Docker : `docker compose -f docker-compose.dev.yml exec api npm run db:migrate:dev`
 
-### Phase 3 — Compléter l'API
+### Phase 3 — Compléter l'API ✅
 
-- [ ] Tous les endpoints manquants (quiz, questions, answers, tags, attempts)
-- [ ] Tests spec pour chaque nouveau controller
+- [x] Tags CRUD (GET/POST/PATCH/DELETE `/tags`)
+- [x] Quiz CRUD + tag operations + attempts (`/quizzes/*`)
+- [x] Questions CRUD (`/quizzes/:id/questions`, `/questions/:id`)
+- [x] Answers CRUD (`/questions/:id/answers`, `/answers/:id`)
+- [x] Attempts (POST + GET `/quizzes/:id/attempts`)
+- [x] Users profile + historique (`/users/:id/profile`, `/users/:id/attempts`)
+- [x] Tests spec : tags, quizzes, questions, answers
 
 ### Phase 4 — Refondre le frontend
 
