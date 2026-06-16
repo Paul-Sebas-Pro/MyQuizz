@@ -143,11 +143,15 @@ MyQuizz/
 - [x] Users profile + historique (`/users/:id/profile`, `/users/:id/attempts`)
 - [x] Tests spec : tags, quizzes, questions, answers
 
-### Phase 4 — Refondre le frontend
+### Phase 4 — Refondre le frontend ✅
 
-- [ ] Ajouter un routeur (SvelteKit ou svelte-spa-router)
-- [ ] Implémenter toutes les pages
-- [ ] Intégrer le design system
+- [x] Router pushState maison (`lib/router.svelte.ts`) — 0 dépendance
+- [x] Auth store Svelte 5 Runes (`stores/auth.svelte.ts`)
+- [x] Design system CSS — Violet Bloom (`app.css`)
+- [x] API service complet avec DTOs TypeScript
+- [x] NavBar + QuizCard (composants partagés)
+- [x] Pages : Home, Login/Signup, Dashboard, Quiz list, Quiz play, Profil
+- [x] App.svelte — routing dynamique + layout + splash screen
 
 ### Phase 5 — Polish & déploiement
 

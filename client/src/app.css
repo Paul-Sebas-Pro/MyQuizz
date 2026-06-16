@@ -1,19 +1,164 @@
-* {
-  box-sizing: border-box;
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Variables — Violet Bloom ─────────────────────────────────────────────── */
+:root {
+  /* Couleurs */
+  --c-ground:      #FFFFFF;
+  --c-tile:        #FDE2D9;
+  --c-tile-hover:  #FACBBF;
+  --c-inverse:     #1A1A1A;
+  --c-accent:      #7B61FF;
+  --c-accent-soft: #EDE9FF;
+  --c-muted:       #6B7280;
+  --c-border:      #E5E7EB;
+  --c-error:       #EF4444;
+  --c-success:     #10B981;
+
+  /* Typographie */
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  /* Espacement */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  /* Rayons */
+  --r-sm:   0.5rem;
+  --r-md:   1rem;
+  --r-lg:   1.5rem;
+  --r-xl:   2rem;
+  --r-full: 9999px;
+
+  /* Ombres */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.12);
+
+  /* Layout */
+  --max-width: 1200px;
 }
+
+/* ── Reset ────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  margin: 0;
-  padding: 0;
+  background: var(--c-ground);
+  color: var(--c-inverse);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-#app {
-  font-family: Arial, Helvetica, sans-serif;
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; }
 
-  min-height: 100vh;
-  max-width: 1280px;
-  padding: 1rem;
+a { color: var(--c-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+img { max-width: 100%; display: block; }
+
+/* ── Composants utilitaires ───────────────────────────────────────────────── */
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--sp-6);
+}
+
+/* Boutons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-6);
+  border: none;
+  border-radius: var(--r-full);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-primary { background: var(--c-accent); color: #fff; }
+.btn-secondary { background: var(--c-tile); color: var(--c-inverse); }
+.btn-ghost { background: transparent; color: var(--c-accent); border: 2px solid var(--c-accent); }
+.btn-sm { padding: var(--sp-2) var(--sp-4); font-size: 0.875rem; }
+
+/* Tiles / cartes */
+.tile {
+  background: var(--c-tile);
+  border-radius: var(--r-lg);
+  padding: var(--sp-6);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.tile:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+/* Formulaires */
+.form-group { display: flex; flex-direction: column; gap: var(--sp-2); }
+.form-group label { font-weight: 600; font-size: 0.875rem; }
+
+.input {
+  padding: var(--sp-3) var(--sp-4);
+  border: 2px solid var(--c-border);
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  background: var(--c-ground);
+  color: var(--c-inverse);
+  transition: border-color 0.15s;
+  outline: none;
+}
+.input:focus { border-color: var(--c-accent); }
+.input::placeholder { color: var(--c-muted); }
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+}
+
+/* Messages */
+.msg-error {
+  color: var(--c-error);
+  font-size: 0.875rem;
+  padding: var(--sp-3) var(--sp-4);
+  background: #FEF2F2;
+  border-radius: var(--r-md);
+  border: 1px solid #FECACA;
+}
+.msg-success {
+  color: var(--c-success);
+  font-size: 0.875rem;
+  padding: var(--sp-3) var(--sp-4);
+  background: #F0FDF4;
+  border-radius: var(--r-md);
+  border: 1px solid #BBF7D0;
+}
+
+/* Grid bento */
+.bento { display: grid; gap: var(--sp-4); }
+.bento-2 { grid-template-columns: repeat(2, 1fr); }
+.bento-3 { grid-template-columns: repeat(3, 1fr); }
+.bento-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 768px) {
+  .bento-2, .bento-3, .bento-4 { grid-template-columns: 1fr; }
+  .container { padding: 0 var(--sp-4); }
 }
