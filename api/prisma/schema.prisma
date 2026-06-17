@@ -1,6 +1,5 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -45,6 +44,8 @@ model Level {
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
+
+  @@map("level")
 }
 
 model RefreshToken {
@@ -52,7 +53,7 @@ model RefreshToken {
 
   token String
 
-  user    User @relation(fields: [user_id], references: [id])
+  user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id Int
 
   issued_at  DateTime @default(now())

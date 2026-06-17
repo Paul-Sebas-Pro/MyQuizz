@@ -4,7 +4,4 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
-
-# Prisma generate à chaque démarrage (schema monté via volume)
-CMD sh -c "npx prisma generate && npx tsx --watch index.ts"
+CMD sh -c "npm install && npx prisma generate && npx tsx --watch index.ts"

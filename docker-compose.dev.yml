@@ -89,7 +89,7 @@ services:
     networks:
       - myquizz-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myquizz"]
+      test: ["CMD-SHELL", "pg_isready -U myquizz -d myquizz_db"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -136,7 +136,7 @@
 
     {#if !authStore.isAuthenticated}
       <p class="login-notice">
-        <a href="/login" onclick|preventDefault={() => navigate('/login')}>Connectez-vous</a>
+        <a href="/login" onclick={(e) => { e.preventDefault(); navigate('/login'); }}>Connectez-vous</a>
         pour sauvegarder votre score.
       </p>
     {/if}
@@ -157,7 +157,7 @@
 
       <!-- Détail par question -->
       <div class="result-details">
-        {#each questions as q, i}
+        {#each questions as q}
           {@const detail = result.details.find((d) => d.question_id === q.id)}
           <div class="result-row" class:correct={detail?.is_correct} class:wrong={!detail?.is_correct}>
             <span class="result-icon">{detail?.is_correct ? '✓' : '✗'}</span>

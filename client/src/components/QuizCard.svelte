@@ -23,7 +23,7 @@
 
   <footer class="card-footer">
     <span class="author">par {quiz.author.firstname} {quiz.author.lastname}</span>
-    <button class="btn btn-sm btn-primary" onclick|stopPropagation={() => navigate(`/quizzes/${quiz.id}`)}>
+    <button class="btn btn-sm btn-primary" onclick={(e) => { e.stopPropagation(); navigate(`/quizzes/${quiz.id}`); }}>
       Jouer →
     </button>
   </footer>
@@ -56,6 +56,7 @@
     line-height: 1.5;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
