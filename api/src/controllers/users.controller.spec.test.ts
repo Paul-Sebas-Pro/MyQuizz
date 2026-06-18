@@ -1,60 +1,109 @@
-// on importe nos fonctions permettant de tester
+import argon2 from "argon2";
+import jwt from "jsonwebtoken";
 import assert from "node:assert";
-import {it, describe} from "node:test";
-// on importe prisma
-import { prisma } from '../models/index.ts';
-// on importe la fonction permettant de faire des requêtes
-import { requester } from '../../test/index.ts';
+import { describe, it } from "node:test";
+import { config } from "../../config.ts";
+import { prisma } from "../models/index.ts";
+import { requester } from "../../test/index.ts";
 
-// maintenant on va préparer nos tests de requetes
+// GET /users → admin seulement
 
-// récupérer les users
+async function createAdminToken() {
+  const user = await prisma.user.create({
+    data: {
+      firstname: "Admin",
+      lastname: "Test",
+      email: `admin-${Date.now()}@users-test.com`,
+      password: await argon2.hash("TestPassword123!"),
+      role: "admin",
+    },
+  });
+  return {
+    user,
+    token: jwt.sign({ userId: user.id, role: user.role }, config.jwtSecret, { expiresIn: "1h" }),
+  };
+}
+
 describe("GET /api/users", () => {
   it("should return an array containing the users from the database", async () => {
-    // On crée les données
-    // on appelle createManyAndReturn afin de récupérer le résultat de la création de nos données
+    // Arrange : 1 admin (pour le token) + 2 users créés
+    const { user: adminUser } = await createAdminToken();
     const databaseUsers = await prisma.user.createManyAndReturn({
       data: [
-        {
-          firstname: "Toto", lastname: "toto", email: "toto@toto.fr", password: "motdepasse"
-        },
-        {
-          firstname: "Tata", lastname: "tata", email: "tata@tata.com", password: "motdepasse3000"
-        }
-      ]
+        { firstname: "Toto", lastname: "toto", email: "toto@toto.fr", password: "motdepasse" },
+        { firstname: "Tata", lastname: "tata", email: "tata@tata.com", password: "motdepasse3000" },
+      ],
     });
-    // On récupère les données crées
-    const { data: responseUsers } = await requester.get("/users");
-    // On regarde si elles sont viables
-    // sur nos données, on veut récupérer 2 users, avec chacun un id
-    // est ce qu'on a 2 users
-    assert.strictEqual(responseUsers.length, 2); // si notre tableau a une longueur de 2, on a bien récupéré 2 users
-    // on va vérifier que les ids des users qu'on récupère sont égaux à ceux qu'on a récupéré quand on a créé nos users
-    assert.strictEqual(responseUsers[0].id, databaseUsers[0].id);
-    assert.strictEqual(responseUsers[1].id, databaseUsers[1].id);
 
-    // ensuite on peut vérifier les valeurs des champs (on va pas tous les faire mais vous avez l'idée)
-    assert.strictEqual(responseUsers[0].email, databaseUsers[0].email);
+    // Act
+    const { token } = await createAdminToken();
+    const { data: responseUsers } = await requester.get("/users", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // Assert : admin + databaseUsers[0] + databaseUsers[1] + 2e admin = 4 users
+    // On vérifie que les users créés sont bien dans la réponse
+    const toto = responseUsers.find((u: { id: number }) => u.id === databaseUsers[0].id);
+    const tata = responseUsers.find((u: { id: number }) => u.id === databaseUsers[1].id);
+    assert.ok(toto, "Toto doit être présent");
+    assert.ok(tata, "Tata doit être présent");
+    assert.strictEqual(toto.email, databaseUsers[0].email);
+
+    // Le mot de passe ne doit pas être exposé
+    assert.strictEqual(toto.password, undefined);
+
+    // L'admin créé doit aussi être présent
+    const admin = responseUsers.find((u: { id: number }) => u.id === adminUser.id);
+    assert.ok(admin, "L'utilisateur admin doit être présent");
   });
-  // Créer un user et vérifier ses propriétés
 
-  it("should return an array containing the users from the database", async () => {
+  it("should return user properties without password", async () => {
+    const { token } = await createAdminToken();
     const newUser = await prisma.user.create({
       data: {
         firstname: "michel",
         lastname: "michel",
         email: "michel@michel.michel",
-        password: "motdepasse"
-      } 
+        password: "motdepasse",
+      },
     });
-    // petit trick de syntaxe : vu qu'on sait qu'on va recevoir un seul élément dans notre tableau, on définit la reception tel que ci dessous afin d'éviter de spécifier dans chaque segment d'asser qu'on utilise notreVariable[0] ... on utilisera plutot notreVariable
-    const { data: [newUserFromApi]} = await requester.get('/users');
 
-    assert.strictEqual(newUserFromApi.id , newUser.id);
-    assert.strictEqual(newUserFromApi.firstname , newUser.firstname);
-    assert.strictEqual(newUserFromApi.lastname , newUser.lastname);
-    assert.strictEqual(newUserFromApi.email , newUser.email);
+    const { data: responseUsers } = await requester.get("/users", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const found = responseUsers.find((u: { id: number }) => u.id === newUser.id);
+    assert.ok(found, "L'utilisateur créé doit être présent");
+    assert.strictEqual(found.id, newUser.id);
+    assert.strictEqual(found.firstname, newUser.firstname);
+    assert.strictEqual(found.lastname, newUser.lastname);
+    assert.strictEqual(found.email, newUser.email);
+    assert.strictEqual(found.password, undefined);
   });
 
-});
+  it("should return 401 without authentication token", async () => {
+    const { status } = await requester.get("/users");
+    assert.strictEqual(status, 401);
+  });
 
+  it("should return 403 when authenticated as member", async () => {
+    const member = await prisma.user.create({
+      data: {
+        firstname: "Member",
+        lastname: "Test",
+        email: "member@users-test.com",
+        password: await argon2.hash("TestPassword123!"),
+        role: "member",
+      },
+    });
+    const memberToken = jwt.sign(
+      { userId: member.id, role: member.role },
+      config.jwtSecret,
+      { expiresIn: "1h" },
+    );
+    const { status } = await requester.get("/users", {
+      headers: { Authorization: `Bearer ${memberToken}` },
+    });
+    assert.strictEqual(status, 403);
+  });
+});

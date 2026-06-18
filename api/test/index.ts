@@ -5,7 +5,7 @@ import axios from "axios";
 
 // on crée notre URL de base
 // puis on l'exporte
-export const apiBaseUrl = `http://localhost:${process.env.PORT}/API`;
+export const apiBaseUrl = `http://localhost:${process.env.PORT}/api`;
 
 // on crée un requeteur axios
 // cette requête axios sera exportée pour être utilisée dans les tests

@@ -16,12 +16,27 @@ jobs:
       run:
         working-directory: api
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
@@ -29,7 +44,7 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
         env:
-          DATABASE_URL: postgres://myquizztest:myquizztest@localhost:5438/myquizztest_db
+          DATABASE_URL: postgres://myquizztest:myquizztest@localhost:5432/myquizztest_db
 
       - name: Lint
         run: npm run lint
@@ -38,7 +53,16 @@ jobs:
         run: npm run test:unit
 
       - name: Integration tests
-        run: npm run test:spec
+        run: npm run test:spec:docker
+        env:
+          USE_PG_CLIENT: "true"
+          POSTGRES_USER: myquizztest
+          POSTGRES_PASSWORD: myquizztest
+          POSTGRES_DB: myquizztest_db
+          POSTGRES_ADMIN_URL: postgres://postgres:postgres@localhost:5432/postgres
+          DATABASE_URL: postgres://myquizztest:myquizztest@localhost:5432/myquizztest_db
+          JWT_SECRET: test-jwt-secret-for-integration-tests
+          PORT: "7357"
 
   # ─── CLIENT ─────────────────────────────────────────────────────────────────
   client:

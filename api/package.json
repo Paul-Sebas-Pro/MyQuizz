@@ -11,6 +11,7 @@
     "dev": "tsx --watch --env-file=.env index.ts",
     "test:unit": "tsx --test ./**/*.unit.test.ts",
     "test:spec": "tsx --test --env-file=./test/config/.env.test --import ./test/config/global-setup.ts --experimental-test-isolation=none ./**/*.spec.test.ts",
+    "test:spec:docker": "tsx --test --env-file=./test/config/.env.test.docker --import ./test/config/bootstrap.ts --import ./test/config/global-setup.ts --experimental-test-isolation=none ./**/*.spec.test.ts",
     "test": "npm run test:unit && npm run test:spec",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -30,6 +31,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.3",
+    "@types/pg": "^8.20.0",
     "eslint": "^10.5.0",
     "husky": "^9.1.7",
     "prisma": "^7.8.0",
@@ -39,6 +41,7 @@
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
+    "pg": "^8.21.0",
     "argon2": "^0.44.0",
     "axios": "^1.18.0",
     "cors": "^2.8.6",
